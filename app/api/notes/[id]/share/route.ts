@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/app/lib/prisma";
 import { authOptions } from "@/app/lib/auth";
+import { sendShareNoteEmail } from "@/app/lib/email";
 
 export async function POST(
   req: Request,
@@ -23,21 +24,7 @@ export async function POST(
       );
     }
 
-    const note = await prisma.note.findUnique({
-      where: { id: params.id },
-      include: {
-        sharedWith: true,
-      },
-    });
-
-    if (!note) {
-      return NextResponse.json({ error: "Note not found" }, { status: 404 });
-    }
-
-    if (note.authorId !== session.user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
+    // Find the user to share with
     const userToShare = await prisma.user.findUnique({
       where: { email },
     });
@@ -49,34 +36,56 @@ export async function POST(
       );
     }
 
-    // Check if note is already shared with the user
-    const isAlreadyShared = note.sharedWith.some(
-      (share) => share.userId === userToShare.id
-    );
-
-    if (isAlreadyShared) {
-      return NextResponse.json(
-        { error: "Note already shared with this user" },
-        { status: 400 }
-      );
-    }
-
-    const sharedNote = await prisma.sharedNote.create({
-      data: {
-        noteId: note.id,
-        userId: userToShare.id,
-      },
+    // Find the note
+    const note = await prisma.note.findUnique({
+      where: { id: params.id },
       include: {
-        user: {
+        sharedWith: true,
+        author: {
           select: {
-            name: true,
             email: true,
           },
         },
       },
     });
 
-    return NextResponse.json(sharedNote);
+    if (!note) {
+      return NextResponse.json(
+        { error: "Note not found" },
+        { status: 404 }
+      );
+    }
+
+    // Check if user is already shared with
+    const alreadyShared = note.sharedWith.some(
+      (share) => share.userId === userToShare.id
+    );
+
+    if (alreadyShared) {
+      return NextResponse.json(
+        { error: "Note already shared with this user" },
+        { status: 400 }
+      );
+    }
+
+    // Create share record
+    await prisma.sharedNote.create({
+      data: {
+        userId: userToShare.id,
+        noteId: note.id,
+      },
+    });
+
+    // Send email notification
+    const noteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/notes/${note.id}`;
+    await sendShareNoteEmail(
+      email,
+      session.user.email,
+      note.title,
+      noteUrl
+    );
+
+    return NextResponse.json({ message: "Note shared successfully" });
   } catch (error) {
     console.error("Error sharing note:", error);
     return NextResponse.json(

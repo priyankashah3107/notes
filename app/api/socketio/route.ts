@@ -11,7 +11,8 @@ export async function GET(req: Request) {
   try {
     if (!io) {
       const res = new NextResponse();
-      const server = res.socket?.server as unknown as NetServer;
+      // Access server from request instead of response
+      const server = (req as any).socket.server as NetServer;
       
       io = new SocketIOServer(server, {
         path: "/api/socketio",

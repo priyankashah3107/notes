@@ -1,6 +1,6 @@
-import { User } from "@prisma/client";
+import { User as PrismaUser } from "@prisma/client";
 
-export type SafeUser = Omit<User, "password">;
+export type SafeUser = Omit<PrismaUser, "password">;
 
 declare module "next-auth" {
   interface Session {
@@ -12,16 +12,10 @@ declare module "next-auth" {
   }
 }
 
-export interface User {
-  id: string;
-  name?: string | null;
-  email?: string | null;
-}
-
 export interface SharedNote {
   userId: string;
   noteId: string;
-  user?: User;
+  user?: PrismaUser;
 }
 
 export interface Note {
@@ -32,6 +26,6 @@ export interface Note {
   createdAt: string;
   updatedAt: string;
   authorId: string;
-  author?: User;
+  author?: PrismaUser;
   sharedWith?: SharedNote[];
 } 

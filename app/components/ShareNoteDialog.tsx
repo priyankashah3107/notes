@@ -88,9 +88,12 @@ export function ShareNoteDialog({ isOpen, onClose, onShare, note }: ShareNoteDia
               <div className="bg-white p-4 border-4 border-black">
                 <h4 className="font-bold mb-2">Currently shared with:</h4>
                 <ul className="list-disc list-inside">
-                  {note.sharedWith.map((share) => (
-                    <li key={share.id} className="text-sm">
-                      {share.user?.email}
+                  {note.sharedWith.map((share, index) => (
+                    <li key={index} className="text-sm">
+                      {/* {share.user?.email} */}
+                      {share.user?.name}
+
+
                     </li>
                   ))}
                 </ul>

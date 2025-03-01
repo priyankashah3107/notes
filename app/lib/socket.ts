@@ -13,13 +13,13 @@ interface CustomServer extends NetServer {
   io?: SocketIOServer;
 }
 
-interface SocketResponse extends NextApiResponse {
+type NextApiResponseWithSocket = NextApiResponse & {
   socket: {
     server: CustomServer;
   };
-}
+};
 
-export default function SocketHandler(res: SocketResponse) {
+export default function SocketHandler(res: NextApiResponseWithSocket) {
   if (!res.socket.server.io) {
     console.log('Initializing Socket.io server...');
     

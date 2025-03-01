@@ -1,7 +1,5 @@
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { NextApiRequest } from 'next';
-import { NextApiResponseServerIO } from '@/types/socket';
 
 const httpServer = createServer();
 const io = new Server(httpServer, {
