@@ -70,6 +70,7 @@ const app = express();
 const httpServer = createServer(app);
 
 const isDev = process.env.NODE_ENV !== 'production';
+const PORT = process.env.SOCKET_PORT || 3001;
 const CORS_ORIGIN = isDev ? 'http://localhost:3000' : process.env.VERCEL_URL;
 
 // Enable CORS
@@ -81,10 +82,8 @@ app.use(cors({
 const io = new Server(httpServer, {
   cors: {
     origin: CORS_ORIGIN,
-    methods: ["GET", "POST"],
-    credentials: true
-  },
-  transports: ['websocket']
+    methods: ['GET', 'POST']
+  }
 });
 
 // Track connected users
@@ -174,8 +173,26 @@ io.on("connection", (socket) => {
   });
 });
 
-// ✅ Start the Server
-const PORT = process.env.PORT || 3001;
-httpServer.listen(PORT, () => {
-  console.log(`Socket.IO server running on port ${PORT}`);
-});
+// Error handling for port conflicts
+const startServer = async () => {
+  try {
+    await new Promise((resolve, reject) => {
+      httpServer.listen(PORT, () => {
+        console.log(`Socket.IO server running on port ${PORT}`);
+        resolve();
+      });
+
+      httpServer.on('error', (error) => {
+        if (error.code === 'EADDRINUSE') {
+          console.error(`Port ${PORT} is already in use. Please free up the port or use a different one.`);
+        }
+        reject(error);
+      });
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
