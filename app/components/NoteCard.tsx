@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Note } from "@/app/types";
-import EditNoteDialog from "./EditNoteDialog";
 import ShareNoteDialog from "./ShareNoteDialog";
 
 interface NoteCardProps {
@@ -12,7 +13,7 @@ interface NoteCardProps {
 }
 
 export default function NoteCard({ note, onDelete, onUpdate }: NoteCardProps) {
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const router = useRouter();
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -35,18 +36,27 @@ export default function NoteCard({ note, onDelete, onUpdate }: NoteCardProps) {
     }
   };
 
+  const handleEdit = () => {
+    router.push(`/notes/${note.id}`);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6 flex flex-col">
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="text-xl font-semibold text-gray-900">{note.title}</h3>
+          <Link
+            href={`/notes/${note.id}`}
+            className="text-xl font-semibold text-gray-900 hover:text-indigo-600"
+          >
+            {note.title}
+          </Link>
           <p className="text-sm text-gray-500 mt-1">
             Category: {note.category || "Personal"}
           </p>
         </div>
         <div className="flex space-x-2">
           <button
-            onClick={() => setIsEditDialogOpen(true)}
+            onClick={handleEdit}
             className="text-gray-600 hover:text-indigo-600"
           >
             Edit
@@ -82,15 +92,6 @@ export default function NoteCard({ note, onDelete, onUpdate }: NoteCardProps) {
           </p>
         )}
       </div>
-
-      {isEditDialogOpen && (
-        <EditNoteDialog
-          note={note}
-          isOpen={isEditDialogOpen}
-          onClose={() => setIsEditDialogOpen(false)}
-          onUpdate={onUpdate}
-        />
-      )}
 
       {isShareDialogOpen && (
         <ShareNoteDialog
