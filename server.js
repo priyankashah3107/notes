@@ -69,15 +69,18 @@ const cors = require('cors');
 const app = express();
 const httpServer = createServer(app);
 
+const isDev = process.env.NODE_ENV !== 'production';
+const CORS_ORIGIN = isDev ? 'http://localhost:3000' : process.env.VERCEL_URL;
+
 // Enable CORS
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: CORS_ORIGIN,
   credentials: true
 }));
 
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: CORS_ORIGIN,
     methods: ["GET", "POST"],
     credentials: true
   },
@@ -128,25 +131,21 @@ io.on("connection", (socket) => {
 
   socket.on("note:content-change", ({ noteId, content }) => {
     const roomName = `note:${noteId}`;
-    console.log(`Content change from ${socket.id} for note ${noteId}`);
     socket.to(roomName).emit("note:content-change", content);
   });
 
   socket.on("note:title-change", ({ noteId, title }) => {
     const roomName = `note:${noteId}`;
-    console.log(`Title change from ${socket.id} for note ${noteId}`);
     socket.to(roomName).emit("note:title-change", title);
   });
 
   socket.on("note:category-change", ({ noteId, category }) => {
     const roomName = `note:${noteId}`;
-    console.log(`Category change from ${socket.id} for note ${noteId}`);
     socket.to(roomName).emit("note:category-change", category);
   });
 
   socket.on("note:update", ({ noteId, note }) => {
     const roomName = `note:${noteId}`;
-    console.log(`Note update from ${socket.id} for note ${noteId}`);
     socket.to(roomName).emit("note:updated", note);
   });
 

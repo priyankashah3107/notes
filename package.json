@@ -6,7 +6,7 @@
     "dev": "concurrently \"next dev\" \"node server.js\"",
     "dev:custom": "node server.js",
     "socket": "node server.js",
-    "build": "next build",
+    "build": "prisma generate && prisma db push && next build",
     "start": "next start",
     "postinstall": "prisma generate",
     "lint": "next lint"
