@@ -61,25 +61,33 @@
 // }); 
 
 
-const express = require("express");
-const { createServer } = require("http");
-const { Server } = require("socket.io");
-const cors = require("cors");
+const express = require('express');
+const { createServer } = require('http');
+const { Server } = require('socket.io');
+const cors = require('cors');
 
 const app = express();
-const server = createServer(app);
+const httpServer = createServer(app);
 
-const io = new Server(server, {
+// Enable CORS
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true
+}));
+
+const io = new Server(httpServer, {
   cors: {
-    origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
+    origin: "http://localhost:3000",
     methods: ["GET", "POST"],
-    credentials: true,
+    credentials: true
   },
-  transports: ["websocket"],
+  transports: ['websocket']
 });
 
+// Track connected users
+const connectedUsers = new Map();
+
 // ✅ Middleware
-app.use(cors());
 app.use(express.json());
 
 // ✅ API Route for Testing (Optional)
@@ -89,50 +97,86 @@ app.get("/", (req, res) => {
 
 // ✅ Socket.IO Event Handling
 io.on("connection", (socket) => {
-  console.log("Client connected:", socket.id);
+  console.log("Socket connected:", socket.id);
+  connectedUsers.set(socket.id, { currentNote: null });
 
   socket.on("join-note", (noteId) => {
-    socket.join(`note:${noteId}`);
+    const roomName = `note:${noteId}`;
+    socket.join(roomName);
     console.log(`User ${socket.id} joined note: ${noteId}`);
-    socket.to(`note:${noteId}`).emit("user:joined", socket.id);
+    
+    // Update user's current note
+    connectedUsers.get(socket.id).currentNote = noteId;
+    
+    // Notify others in the room
+    socket.to(roomName).emit("user:joined", socket.id);
   });
 
   socket.on("leave-note", (noteId) => {
-    socket.leave(`note:${noteId}`);
+    const roomName = `note:${noteId}`;
+    socket.leave(roomName);
     console.log(`User ${socket.id} left note: ${noteId}`);
-    socket.to(`note:${noteId}`).emit("user:left", socket.id);
+    
+    // Clear user's current note
+    if (connectedUsers.has(socket.id)) {
+      connectedUsers.get(socket.id).currentNote = null;
+    }
+    
+    // Notify others in the room
+    socket.to(roomName).emit("user:left", socket.id);
   });
 
   socket.on("note:content-change", ({ noteId, content }) => {
-    console.log(`Content change from ${socket.id} for note ${noteId}:`, content);
-    socket.to(`note:${noteId}`).emit("note:content-change", content);
+    const roomName = `note:${noteId}`;
+    console.log(`Content change from ${socket.id} for note ${noteId}`);
+    socket.to(roomName).emit("note:content-change", content);
   });
 
   socket.on("note:title-change", ({ noteId, title }) => {
-    console.log(`Title change from ${socket.id} for note ${noteId}:`, title);
-    socket.to(`note:${noteId}`).emit("note:title-change", title);
+    const roomName = `note:${noteId}`;
+    console.log(`Title change from ${socket.id} for note ${noteId}`);
+    socket.to(roomName).emit("note:title-change", title);
   });
 
   socket.on("note:category-change", ({ noteId, category }) => {
-    console.log(`Category change from ${socket.id} for note ${noteId}:`, category);
-    socket.to(`note:${noteId}`).emit("note:category-change", category);
+    const roomName = `note:${noteId}`;
+    console.log(`Category change from ${socket.id} for note ${noteId}`);
+    socket.to(roomName).emit("note:category-change", category);
+  });
+
+  socket.on("note:update", ({ noteId, note }) => {
+    const roomName = `note:${noteId}`;
+    console.log(`Note update from ${socket.id} for note ${noteId}`);
+    socket.to(roomName).emit("note:updated", note);
   });
 
   socket.on("user:typing", ({ noteId }) => {
-    socket.to(`note:${noteId}`).emit("user:typing", socket.id);
+    const roomName = `note:${noteId}`;
+    socket.to(roomName).emit("user:typing", socket.id);
   });
 
   socket.on("user:stopped-typing", ({ noteId }) => {
-    socket.to(`note:${noteId}`).emit("user:stopped-typing", socket.id);
+    const roomName = `note:${noteId}`;
+    socket.to(roomName).emit("user:stopped-typing", socket.id);
   });
 
   socket.on("disconnect", () => {
-    console.log("Client disconnected:", socket.id);
+    console.log("Socket disconnected:", socket.id);
+    
+    // Get the note room the user was in
+    const userData = connectedUsers.get(socket.id);
+    if (userData && userData.currentNote) {
+      const roomName = `note:${userData.currentNote}`;
+      socket.to(roomName).emit("user:left", socket.id);
+    }
+    
+    // Remove user from tracking
+    connectedUsers.delete(socket.id);
   });
 });
 
 // ✅ Start the Server
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+httpServer.listen(PORT, () => {
+  console.log(`Socket.IO server running on port ${PORT}`);
 });

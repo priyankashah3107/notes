@@ -27,14 +27,17 @@ export default function NotePage() {
   }, []);
 
   const handleContentChange = useCallback((content: string) => {
+    console.log('Received content change:', content);
     setEditedContent(content);
   }, []);
 
   const handleTitleChange = useCallback((title: string) => {
+    console.log('Received title change:', title);
     setEditedTitle(title);
   }, []);
 
   const handleCategoryChange = useCallback((category: string) => {
+    console.log('Received category change:', category);
     setEditedCategory(category);
   }, []);
 
@@ -54,7 +57,7 @@ export default function NotePage() {
     emitTyping, 
     emitStoppedTyping 
   } = useSocket(
-    id as string,
+    id,
     handleNoteUpdated,
     handleContentChange,
     handleTitleChange,
@@ -91,7 +94,7 @@ export default function NotePage() {
       } finally {
         setIsSaving(false);
       }
-    }, 500), // Reduced debounce time for more responsive saves
+    }, 1000),
     [note, id, emitNoteUpdate]
   );
 
@@ -117,20 +120,27 @@ export default function NotePage() {
   }, [id]);
 
   const handleChange = (field: 'title' | 'content' | 'category', value: string) => {
+    // Immediately update local state and emit to other users
     if (field === 'title') {
       setEditedTitle(value);
+      // Emit immediately for real-time sync
       emitTitleChange(value);
     }
     if (field === 'content') {
       setEditedContent(value);
+      // Emit immediately for real-time sync
       emitContentChange(value);
     }
     if (field === 'category') {
       setEditedCategory(value);
+      // Emit immediately for real-time sync
       emitCategoryChange(value);
     }
 
+    // Emit typing status
     emitTyping();
+
+    // Save to server with debounce (this won't affect real-time updates)
     debouncedSave({ [field]: value });
   };
 
@@ -195,6 +205,7 @@ export default function NotePage() {
               className="w-full p-3 text-2xl font-bold bg-white border-4 border-black focus:ring-0 focus:outline-none
                 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all
                 hover:translate-x-[2px] hover:translate-y-[2px]"
+              placeholder="Note Title"
             />
             <div className="mt-4">
               <select
@@ -221,7 +232,7 @@ export default function NotePage() {
               className="w-full p-3 bg-white border-4 border-black focus:ring-0 focus:outline-none
                 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all
                 hover:translate-x-[2px] hover:translate-y-[2px]"
-              placeholder="Start typing..."
+              placeholder="Start typing your note here..."
             />
           </div>
 
