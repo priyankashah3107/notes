@@ -4,6 +4,7 @@ import { useEffect, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { debounce } from 'lodash';
 import { Note } from '@/app/types';
+import { getSocketUrl } from '@/app/config/socket';
 
 export function useSocket(
   noteId: string,
@@ -18,7 +19,7 @@ export function useSocket(
 
   useEffect(() => {
     // Always create a new socket connection
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
+    const socketUrl = getSocketUrl();
     console.log('Connecting to socket server at:', socketUrl);
     
     socketRef.current = io(socketUrl, {

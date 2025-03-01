@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm run build",
+  "installCommand": "pnpm install",
+  "framework": "nextjs",
+  "regions": ["fra1"],
+  "env": {
+    "NEXTAUTH_URL": "https://${VERCEL_URL}",
+    "NEXTAUTH_SECRET": "${NEXTAUTH_SECRET}",
+    "DATABASE_URL": "${DATABASE_URL}",
+    "AWS_ACCESS_KEY_ID": "${AWS_ACCESS_KEY_ID}",
+    "AWS_SECRET_ACCESS_KEY": "${AWS_SECRET_ACCESS_KEY}",
+    "AWS_REGION": "${AWS_REGION}",
+    "AWS_SES_FROM_EMAIL": "${AWS_SES_FROM_EMAIL}"
+  }
+} 
