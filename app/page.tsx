@@ -85,7 +85,7 @@ export default function Home() {
           </h2>
           <div className="flex justify-center gap-6">
             <Link 
-              href="/register"
+              href="/signup"
               className="bg-[#98FF98] px-8 py-3 text-lg font-bold border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all"
             >
               Create Free Account
