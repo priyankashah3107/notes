@@ -12,28 +12,26 @@ declare module "next-auth" {
   }
 }
 
+export interface User {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+}
+
+export interface SharedNote {
+  userId: string;
+  noteId: string;
+  user?: User;
+}
+
 export interface Note {
   id: string;
   title: string;
   content: string;
-  category: string;
-  createdAt: Date;
-  updatedAt: Date;
+  category?: string;
+  createdAt: string;
+  updatedAt: string;
   authorId: string;
-  author?: {
-    name: string;
-    email: string;
-  };
-  sharedWith: SharedNote[];
-}
-
-export interface SharedNote {
-  id: string;
-  noteId: string;
-  userId: string;
-  createdAt: Date;
-  user: {
-    name: string;
-    email: string;
-  };
+  author?: User;
+  sharedWith?: SharedNote[];
 } 

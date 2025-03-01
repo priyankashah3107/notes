@@ -19,7 +19,7 @@ export default function Home() {
             Login
           </Link>
           <Link 
-            href="/register"
+            href="/signup"
             className="bg-[#98FF98] px-6 py-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all font-bold"
           >
             Register

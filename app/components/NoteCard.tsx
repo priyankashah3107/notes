@@ -94,22 +94,27 @@ export default function NoteCard({ note, onEdit, onDelete }: NoteCardProps) {
           <p className="line-clamp-3">{note.content}</p>
         </div>
 
-        <div className="flex justify-between items-center text-sm">
-          <div className="font-bold">
-            {note.category || 'Personal'}
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-between items-center text-sm">
+            <div className="font-bold">
+              {note.category || 'Personal'}
+            </div>
+            <div className="text-gray-600">
+              Updated {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}
+            </div>
           </div>
-          <div className="text-gray-600">
-            Updated {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}
+
+          <div className="flex justify-between items-center text-sm pt-2 border-t-2 border-black">
+            <div className="font-bold">
+              Created by: {note.author?.name || note.author?.email || 'Unknown'}
+            </div>
+            {note.sharedWith && note.sharedWith.length > 0 && (
+              <div className="text-sm">
+                Shared with: {note.sharedWith.map(s => s.user?.name || s.user?.email).join(', ')}
+              </div>
+            )}
           </div>
         </div>
-
-        {note.sharedWith && note.sharedWith.length > 0 && (
-          <div className="mt-4 pt-4 border-t-2 border-black">
-            <p className="text-sm font-bold">
-              Shared with: {note.sharedWith.map(s => s.user?.name || s.user?.email).join(', ')}
-            </p>
-          </div>
-        )}
       </div>
 
       {isShareDialogOpen && (

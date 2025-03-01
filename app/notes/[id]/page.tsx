@@ -226,7 +226,7 @@ export default function NotePage() {
 
           <div className="flex justify-between items-center">
             <div className="bg-white p-4 border-4 border-black transform -rotate-1">
-              <p className="font-bold">Created by: {note.author?.name}</p>
+              <p className="font-bold">Created by: {note?.author?.name}</p>
               {note.sharedWith && note.sharedWith.length > 0 && (
                 <p className="mt-2">
                   Shared with:{" "}

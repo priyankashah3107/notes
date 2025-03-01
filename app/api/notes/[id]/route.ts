@@ -123,6 +123,9 @@ export async function DELETE(
 
     const note = await prisma.note.findUnique({
       where: { id: params.id },
+      include: {
+        sharedWith: true,
+      },
     });
 
     if (!note) {
@@ -133,6 +136,16 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // First delete all shared records
+    if (note.sharedWith.length > 0) {
+      await prisma.sharedNote.deleteMany({
+        where: {
+          noteId: params.id,
+        },
+      });
+    }
+
+    // Then delete the note
     await prisma.note.delete({
       where: { id: params.id },
     });
