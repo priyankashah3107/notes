@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"next dev\" \"node server.js\"",
+    "dev": "concurrently \"next dev\" \"SOCKET_PORT=3001 node server.js\"",
     "dev:custom": "node server.js",
     "socket": "node server.js",
     "build": "prisma generate && prisma db push && next build",
