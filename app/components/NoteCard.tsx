@@ -4,18 +4,23 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Note } from "@/app/types";
-import ShareNoteDialog from "./ShareNoteDialog";
+import { ShareNoteDialog } from "./ShareNoteDialog";
+import { formatDistanceToNow } from 'date-fns';
 
 interface NoteCardProps {
   note: Note;
-  onDelete: (id: string) => void;
-  onUpdate: (note: Note) => void;
+  onEdit: (note: Note) => void;
+  onDelete: (noteId: string) => void;
 }
 
-export default function NoteCard({ note, onDelete, onUpdate }: NoteCardProps) {
+export default function NoteCard({ note, onEdit, onDelete }: NoteCardProps) {
   const router = useRouter();
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const randomRotation = Math.random() > 0.5 ? 'rotate-1' : '-rotate-1';
+  const colors = ['#FF90E8', '#98FF98', '#FDFFA8', 'white'];
+  const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this note?")) return;
@@ -27,7 +32,9 @@ export default function NoteCard({ note, onDelete, onUpdate }: NoteCardProps) {
       });
 
       if (!response.ok) throw new Error("Failed to delete note");
+      
       onDelete(note.id);
+      router.refresh();
     } catch (error) {
       console.error("Error deleting note:", error);
       alert("Failed to delete note");
@@ -37,59 +44,71 @@ export default function NoteCard({ note, onDelete, onUpdate }: NoteCardProps) {
   };
 
   const handleEdit = () => {
-    router.push(`/notes/${note.id}`);
+    // Open in new tab
+    window.open(`/notes/${note.id}`, '_blank');
+  };
+
+  const handleShare = () => {
+    setIsShareDialogOpen(true);
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 flex flex-col">
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <Link
-            href={`/notes/${note.id}`}
-            className="text-xl font-semibold text-gray-900 hover:text-indigo-600"
-          >
-            {note.title}
+    <>
+      <div 
+        className="p-6 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] 
+          transform hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all"
+        style={{ backgroundColor: randomColor }}
+      >
+        <div className="flex justify-between items-start mb-4">
+          <Link href={`/notes/${note.id}`}>
+            <h3 className="text-xl font-bold hover:underline">{note.title}</h3>
           </Link>
-          <p className="text-sm text-gray-500 mt-1">
-            Category: {note.category || "Personal"}
-          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={handleEdit}
+              className="bg-black text-white px-3 py-1 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] 
+                hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-sm font-bold"
+            >
+              Edit
+            </button>
+            <button
+              onClick={handleShare}
+              className="bg-[#98FF98] px-3 py-1 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] 
+                hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-sm font-bold"
+            >
+              Share
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-[#FF90E8] px-3 py-1 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] 
+                hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-sm font-bold
+                disabled:opacity-50"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
         </div>
-        <div className="flex space-x-2">
-          <button
-            onClick={handleEdit}
-            className="text-gray-600 hover:text-indigo-600"
-          >
-            Edit
-          </button>
-          <button
-            onClick={() => setIsShareDialogOpen(true)}
-            className="text-gray-600 hover:text-indigo-600"
-          >
-            Share
-          </button>
-          <button
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="text-gray-600 hover:text-red-600 disabled:opacity-50"
-          >
-            Delete
-          </button>
+
+        <div className="mb-4">
+          <p className="line-clamp-3">{note.content}</p>
         </div>
-      </div>
 
-      <p className="text-gray-700 flex-grow whitespace-pre-wrap">
-        {note.content}
-      </p>
+        <div className="flex justify-between items-center text-sm">
+          <div className="font-bold">
+            {note.category || 'Personal'}
+          </div>
+          <div className="text-gray-600">
+            Updated {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}
+          </div>
+        </div>
 
-      <div className="mt-4 text-sm text-gray-500">
-        {note.author?.name && <p>Created by: {note.author.name}</p>}
         {note.sharedWith && note.sharedWith.length > 0 && (
-          <p className="mt-1">
-            Shared with:{" "}
-            {note.sharedWith
-              .map((s) => s.user?.name || s.user?.email || "Unknown user")
-              .join(", ")}
-          </p>
+          <div className="mt-4 pt-4 border-t-2 border-black">
+            <p className="text-sm font-bold">
+              Shared with: {note.sharedWith.map(s => s.user?.name || s.user?.email).join(', ')}
+            </p>
+          </div>
         )}
       </div>
 
@@ -98,8 +117,24 @@ export default function NoteCard({ note, onDelete, onUpdate }: NoteCardProps) {
           note={note}
           isOpen={isShareDialogOpen}
           onClose={() => setIsShareDialogOpen(false)}
+          onShare={async (email) => {
+            try {
+              const response = await fetch(`/api/notes/${note.id}/share`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email }),
+              });
+              if (!response.ok) throw new Error('Failed to share note');
+              router.refresh();
+            } catch (error) {
+              console.error('Error sharing note:', error);
+              throw error;
+            }
+          }}
         />
       )}
-    </div>
+    </>
   );
-} 
+}  

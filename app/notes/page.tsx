@@ -29,25 +29,64 @@ export default function NotesPage() {
     }
   };
 
-  const handleNoteCreated = (note: Note) => {
-    setNotes((prev) => [note, ...prev]);
-    setIsCreateDialogOpen(false);
+  const handleCreateNote = async (note: { title: string; content: string; category: string }) => {
+    try {
+      const response = await fetch("/api/notes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(note),
+      });
+
+      if (!response.ok) throw new Error("Failed to create note");
+      
+      const createdNote = await response.json();
+      setNotes((prev) => [createdNote, ...prev]);
+      setIsCreateDialogOpen(false);
+      router.refresh();
+    } catch (error) {
+      console.error("Error creating note:", error);
+      throw error; // Re-throw to be handled by the dialog
+    }
   };
 
-  const handleNoteDeleted = (noteId: string) => {
-    setNotes((prev) => prev.filter((note) => note.id !== noteId));
+  const handleNoteDeleted = async (noteId: string) => {
+    try {
+      setNotes((prev) => prev.filter((note) => note.id !== noteId));
+      router.refresh();
+    } catch (error) {
+      console.error("Error handling note deletion:", error);
+    }
   };
 
-  const handleNoteUpdated = (updatedNote: Note) => {
-    setNotes((prev) =>
-      prev.map((note) => (note.id === updatedNote.id ? updatedNote : note))
-    );
+  const handleNoteUpdated = async (updatedNote: Note) => {
+    try {
+      const response = await fetch(`/api/notes/${updatedNote.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedNote),
+      });
+
+      if (!response.ok) throw new Error("Failed to update note");
+      const savedNote = await response.json();
+      
+      setNotes((prev) =>
+        prev.map((note) => (note.id === savedNote.id ? savedNote : note))
+      );
+      router.refresh();
+    } catch (error) {
+      console.error("Error updating note:", error);
+      alert("Failed to update note");
+    }
   };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl">Loading...</div>
+        <div className="text-xl font-bold">Loading...</div>
       </div>
     );
   }
@@ -58,7 +97,8 @@ export default function NotesPage() {
         <h1 className="text-3xl font-bold">My Notes</h1>
         <button
           onClick={() => setIsCreateDialogOpen(true)}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="px-6 py-3 bg-[#FDFFA8] border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+            hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold"
         >
           Create Note
         </button>
@@ -66,7 +106,9 @@ export default function NotesPage() {
 
       {notes.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-500">No notes yet. Create your first note!</p>
+          <div className="bg-white p-8 border-4 border-black inline-block transform rotate-1">
+            <p className="font-bold text-lg">No notes yet. Create your first note!</p>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -75,7 +117,7 @@ export default function NotesPage() {
               key={note.id}
               note={note}
               onDelete={handleNoteDeleted}
-              onUpdate={handleNoteUpdated}
+              onEdit={handleNoteUpdated}
             />
           ))}
         </div>
@@ -84,7 +126,7 @@ export default function NotesPage() {
       <CreateNoteDialog
         isOpen={isCreateDialogOpen}
         onClose={() => setIsCreateDialogOpen(false)}
-        onNoteCreated={handleNoteCreated}
+        onCreate={handleCreateNote}
       />
     </div>
   );

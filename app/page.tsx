@@ -1,100 +1,118 @@
-import Image from "next/image";
+import Link from 'next/link';
+import { Roboto_Mono } from 'next/font/google';
+
+const robotoMono = Roboto_Mono({ subsets: ['latin'] });
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="min-h-screen bg-[#FDFFA8] p-8">
+      {/* Navigation */}
+      <nav className="max-w-7xl mx-auto flex justify-between items-center mb-16">
+        <div className="text-2xl font-bold bg-white px-4 py-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all">
+          Notes App
+        </div>
+        <div className="flex gap-4">
+          <Link 
+            href="/login"
+            className="bg-[#FF90E8] px-6 py-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all font-bold"
+          >
+            Login
+          </Link>
+          <Link 
+            href="/register"
+            className="bg-[#98FF98] px-6 py-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all font-bold"
+          >
+            Register
+          </Link>
+        </div>
+      </nav>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Hero Section */}
+      <main className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          <div>
+            <h1 className="text-6xl font-black mb-6 leading-tight">
+              <span className="bg-[#FF90E8] px-4 py-2 border-4 border-black inline-block transform -rotate-2">
+                Collaborative
+              </span>
+              <br />
+              <span className="bg-white px-4 py-2 border-4 border-black inline-block mt-2 transform rotate-1">
+                Note-Taking
+              </span>
+              <br />
+              <span className="bg-[#98FF98] px-4 py-2 border-4 border-black inline-block mt-2 transform -rotate-1">
+                Made Fun!
+              </span>
+            </h1>
+            <p className="text-xl mb-8 font-bold max-w-md">
+              Create, share, and collaborate on notes in real-time. Experience the future of note-taking!
+            </p>
+            <Link 
+              href="/notes"
+              className="inline-block bg-black text-white px-8 py-4 text-xl font-bold border-4 border-black shadow-[8px_8px_0px_0px_#FF90E8] hover:translate-x-[6px] hover:translate-y-[6px] hover:shadow-none transition-all"
+            >
+              Start Taking Notes →
+            </Link>
+          </div>
+
+          {/* Feature Cards */}
+          <div className="grid grid-cols-2 gap-6">
+            <div className="bg-[#98FF98] p-6 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform rotate-2">
+              <h3 className="text-xl font-bold mb-2">Real-Time Collaboration</h3>
+              <p>Work together with your team in real-time</p>
+            </div>
+            <div className="bg-[#FF90E8] p-6 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform -rotate-2">
+              <h3 className="text-xl font-bold mb-2">Auto-Saving</h3>
+              <p>Never lose your work with automatic saves</p>
+            </div>
+            <div className="bg-white p-6 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform -rotate-1">
+              <h3 className="text-xl font-bold mb-2">Rich Text Editor</h3>
+              <p>Format your notes just the way you like</p>
+            </div>
+            <div className="bg-[#FDFFA8] p-6 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform rotate-1">
+              <h3 className="text-xl font-bold mb-2">Secure Sharing</h3>
+              <p>Share notes with specific team members</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Call to Action */}
+        <div className="mt-24 text-center">
+          <h2 className="text-4xl font-bold mb-8">
+            <span className="bg-white px-4 py-2 border-4 border-black inline-block transform rotate-1">
+              Ready to Get Started?
+            </span>
+          </h2>
+          <div className="flex justify-center gap-6">
+            <Link 
+              href="/register"
+              className="bg-[#98FF98] px-8 py-3 text-lg font-bold border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all"
+            >
+              Create Free Account
+            </Link>
+            <Link 
+              href="/about"
+              className="bg-[#FF90E8] px-8 py-3 text-lg font-bold border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all"
+            >
+              Learn More
+            </Link>
+          </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      {/* Footer */}
+      <footer className="max-w-7xl mx-auto mt-24 pt-12 border-t-4 border-black">
+        <div className="flex justify-between items-center">
+          <div className="text-xl font-bold">Notes App</div>
+          <div className="flex gap-8">
+            <Link href="/privacy" className="font-bold hover:underline">Privacy</Link>
+            <Link href="/terms" className="font-bold hover:underline">Terms</Link>
+            <Link href="/contact" className="font-bold hover:underline">Contact</Link>
+          </div>
+        </div>
+        <div className="mt-4 text-sm">
+          © 2024 Notes App. All rights reserved.
+        </div>
       </footer>
     </div>
   );

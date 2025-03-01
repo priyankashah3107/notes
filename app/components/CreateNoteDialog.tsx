@@ -7,13 +7,13 @@ import Dialog from "./Dialog";
 interface CreateNoteDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onNoteCreated: (note: Note) => void;
+  onCreate: (note: { title: string; content: string; category: string }) => Promise<void>;
 }
 
 export default function CreateNoteDialog({
   isOpen,
   onClose,
-  onNoteCreated,
+  onCreate,
 }: CreateNoteDialogProps) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -27,24 +27,11 @@ export default function CreateNoteDialog({
     setError("");
 
     try {
-      const response = await fetch("/api/notes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title,
-          content,
-          category,
-        }),
+      await onCreate({
+        title: title.trim(),
+        content: content.trim(),
+        category,
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to create note");
-      }
-
-      const note = await response.json();
-      onNoteCreated(note);
       handleClose();
     } catch (error) {
       console.error("Error creating note:", error);
@@ -68,7 +55,7 @@ export default function CreateNoteDialog({
         <div>
           <label
             htmlFor="title"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-bold"
           >
             Title
           </label>
@@ -78,14 +65,17 @@ export default function CreateNoteDialog({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            className="mt-1 block w-full p-3 bg-white border-4 border-black focus:ring-0 focus:outline-none
+              shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all
+              hover:translate-x-[2px] hover:translate-y-[2px]"
+            placeholder="Enter note title..."
           />
         </div>
 
         <div>
           <label
             htmlFor="category"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-bold"
           >
             Category
           </label>
@@ -93,19 +83,20 @@ export default function CreateNoteDialog({
             id="category"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            className="mt-1 block w-full p-3 bg-white border-4 border-black focus:ring-0 focus:outline-none
+              shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all
+              hover:translate-x-[2px] hover:translate-y-[2px]"
           >
             <option value="Personal">Personal</option>
             <option value="Work">Work</option>
             <option value="Study">Study</option>
-            <option value="Other">Other</option>
           </select>
         </div>
 
         <div>
           <label
             htmlFor="content"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-bold"
           >
             Content
           </label>
@@ -115,24 +106,34 @@ export default function CreateNoteDialog({
             onChange={(e) => setContent(e.target.value)}
             required
             rows={4}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            className="mt-1 block w-full p-3 bg-white border-4 border-black focus:ring-0 focus:outline-none
+              shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none transition-all
+              hover:translate-x-[2px] hover:translate-y-[2px]"
+            placeholder="Enter note content..."
           />
         </div>
 
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {error && (
+          <div className="bg-[#FF90E8] p-4 border-4 border-black">
+            <p className="font-bold">{error}</p>
+          </div>
+        )}
 
-        <div className="flex justify-end space-x-3">
+        <div className="flex justify-end space-x-3 pt-4">
           <button
             type="button"
             onClick={handleClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="px-6 py-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+              hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold"
           >
             Cancel
           </button>
           <button
             type="submit"
-            disabled={isLoading}
-            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            disabled={isLoading || !title.trim() || !content.trim()}
+            className="px-6 py-3 bg-[#FDFFA8] border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+              hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all font-bold
+              disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? "Creating..." : "Create Note"}
           </button>
