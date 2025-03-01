@@ -7,10 +7,17 @@ import { debounce } from "lodash";
 export function useSocket(
   noteId: string,
   onNoteUpdated: (note: any) => void,
+  onContentChange?: (content: string) => void,
   onUserTyping?: (userId: string) => void,
   onUserStoppedTyping?: (userId: string) => void
 ) {
   const socketRef = useRef<Socket | null>(null);
+
+  const emitContentChange = useCallback((content: string) => {
+    if (socketRef.current) {
+      socketRef.current.emit("content-change", { noteId, content });
+    }
+  }, [noteId]);
 
   const emitTyping = useCallback(
     debounce(() => {
@@ -50,6 +57,12 @@ export function useSocket(
 
     socket.on("note-updated", onNoteUpdated);
 
+    if (onContentChange) {
+      socket.on("content-change", ({ content }) => {
+        onContentChange(content);
+      });
+    }
+
     if (onUserTyping) {
       socket.on("user-typing", ({ userId }) => {
         onUserTyping(userId);
@@ -70,7 +83,7 @@ export function useSocket(
         socket.disconnect();
       }
     };
-  }, [noteId, onNoteUpdated, onUserTyping, onUserStoppedTyping]);
+  }, [noteId, onNoteUpdated, onContentChange, onUserTyping, onUserStoppedTyping]);
 
   const emitNoteUpdate = useCallback((note: any) => {
     if (socketRef.current) {
@@ -80,6 +93,7 @@ export function useSocket(
 
   return {
     emitNoteUpdate,
+    emitContentChange,
     emitTyping,
     emitStoppedTyping,
   };

@@ -18,7 +18,10 @@ export default function NotePage() {
 
   const handleNoteUpdated = useCallback((updatedNote: Note) => {
     setNote(updatedNote);
-    setEditedContent(updatedNote.content);
+  }, []);
+
+  const handleContentChange = useCallback((content: string) => {
+    setEditedContent(content);
   }, []);
 
   const handleUserTyping = useCallback((userId: string) => {
@@ -29,9 +32,10 @@ export default function NotePage() {
     setTypingUsers((prev) => prev.filter((id) => id !== userId));
   }, []);
 
-  const { emitNoteUpdate, emitTyping, emitStoppedTyping } = useSocket(
+  const { emitNoteUpdate, emitContentChange, emitTyping, emitStoppedTyping } = useSocket(
     id as string,
     handleNoteUpdated,
+    handleContentChange,
     handleUserTyping,
     handleUserStoppedTyping
   );
@@ -87,9 +91,10 @@ export default function NotePage() {
     fetchNote();
   }, [id]);
 
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleContentChangeLocal = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
     setEditedContent(newContent);
+    emitContentChange(newContent); // Emit content change immediately
     emitTyping();
     debouncedSave(newContent);
   };
@@ -183,7 +188,7 @@ export default function NotePage() {
           <div className="mb-4">
             <textarea
               value={editedContent}
-              onChange={handleContentChange}
+              onChange={handleContentChangeLocal}
               onBlur={() => emitStoppedTyping()}
               rows={10}
               className="w-full p-2 border rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
